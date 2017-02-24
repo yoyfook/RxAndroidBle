@@ -1,18 +1,14 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 buildscript {
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.3.1'
-    }
 }
 
 repositories {
     mavenLocal()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 android {
@@ -25,6 +21,10 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+
+        jackOptions {
+            enabled true
+        }
     }
     buildTypes {
         release {
@@ -43,8 +43,9 @@ configurations.all {
 }
 
 dependencies {
-    // compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.1.0', changing: false
-    compile project(path: ':rxandroidble')
+//     compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.2.0-SNAPSHOT', changing: false
+//    compile project(path: ':rxandroidble')
+    compile "com.polidea.rxandroidble:rxandroidble:1.2.0-SNAPSHOT"
     compile "com.android.support:appcompat-v7:$rootProject.ext.buildToolsVersionVariable"
     compile "com.android.support:design:$rootProject.ext.buildToolsVersionVariable"
     compile 'com.jakewharton:butterknife:8.4.0'
