@@ -6,9 +6,9 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
@@ -34,7 +34,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     RxBleRadioOperationDescriptorWrite objectUnderTest
 
@@ -187,7 +187,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release RadioReleaseInterface after successful write"() {
 
         given:
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
@@ -196,10 +196,10 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed to start"() {
+    def "should release RadioReleaseInterface when write failed to start"() {
 
         given:
         givenDescriptorWriteFailToStart()
@@ -208,10 +208,10 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed"() {
+    def "should release RadioReleaseInterface when write failed"() {
         given:
         shouldEmitErrorOnDescriptorWrite(new Throwable("test"))
 
@@ -219,7 +219,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     @Unroll
@@ -286,7 +286,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt, bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData, testScheduler)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

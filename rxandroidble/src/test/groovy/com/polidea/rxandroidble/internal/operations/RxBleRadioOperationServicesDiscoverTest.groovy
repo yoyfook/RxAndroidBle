@@ -3,11 +3,11 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.Observable
 import rx.observers.TestSubscriber
@@ -21,7 +21,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
 
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -66,7 +66,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         }
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnServicesDiscovered() and release radio"() {
@@ -83,7 +83,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
+        (1.._) * mockRadioReleaseInterface.release() // technically it's not an error to call it more than once
     }
 
     def "should emit exactly one value when RxBleGattCallback.getOnServicesDiscovered() emits value"() {
@@ -113,7 +113,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertValue(value2)
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         when:
         onServicesDiscoveredPublishSubject.onNext(value3)
@@ -177,7 +177,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
 
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt, timeout, timeoutTimeUnit, testScheduler)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 

@@ -5,9 +5,9 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
@@ -30,13 +30,13 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     RxBleRadioOperationDescriptorRead objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt, mockDescriptor, testScheduler)
 
     def setup() {
         mockCallback.getOnDescriptorRead() >> onDescriptorReadSubject
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 
@@ -170,7 +170,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         testSubscriber.assertValue ByteAssociation.create(mockDescriptor, secondValueFromDescriptor)
     }
 
-    def "should release Semaphore after successful read"() {
+    def "should release RadioReleaseInterface after successful read"() {
 
         given:
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: []])
@@ -179,10 +179,10 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed to start"() {
+    def "should release RadioReleaseInterface when read failed to start"() {
 
         given:
         givenDescriptorReadFailToStart()
@@ -191,10 +191,10 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed"() {
+    def "should release RadioReleaseInterface when read failed"() {
         given:
         shouldEmitErrorOnDescriptorRead(new Throwable("test"))
 
@@ -202,7 +202,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         objectUnderTest.run()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should timeout if RxBleGattCallback.onDescriptorRead() won't trigger in 30 seconds"() {

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import java.util.concurrent.Semaphore
@@ -16,7 +17,7 @@ public class RxBleRadioOperationScanTest extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
     UUIDUtil mockUUIDUtil = Mock UUIDUtil
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     TestSubscriber testSubscriber = new TestSubscriber()
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
 
@@ -28,7 +29,7 @@ public class RxBleRadioOperationScanTest extends Specification {
 
     def prepareObjectUnderTest(RxBleAdapterWrapper adapterWrapper) {
         objectUnderTest = new RxBleRadioOperationScan(null, adapterWrapper, mockUUIDUtil)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
     }
 
     def "should call RxBleAdapterWrapper.startScan() when run()"() {
@@ -101,7 +102,7 @@ public class RxBleRadioOperationScanTest extends Specification {
         objectUnderTest.run()
 
         then:
-        (1.._) * mockSemaphore.release()
+        (1.._) * mockRadioReleaseInterface.release()
 
         where:
         startScanResult << [true, false]

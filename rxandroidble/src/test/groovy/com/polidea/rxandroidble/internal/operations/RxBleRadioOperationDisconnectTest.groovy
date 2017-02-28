@@ -1,14 +1,21 @@
 package com.polidea.rxandroidble.internal.operations
 
-import static android.bluetooth.BluetoothProfile.*
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
+import static android.bluetooth.BluetoothProfile.GATT
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTED
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTING
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTING
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicReference
 import rx.Scheduler
 import rx.android.plugins.RxAndroidPlugins
@@ -27,7 +34,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
 
     String mockMacAddress = "mockMackAddress"
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     BluetoothManager mockBluetoothManager = Mock BluetoothManager
 
@@ -80,7 +87,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         testSubscriber.assertCompleted()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should call BluetoothGatt.close() if BluetoothGatt is disconnected at the time of running and then release the radio"() {
@@ -95,7 +102,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         1 * mockBluetoothGatt.close()
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     @Unroll
@@ -117,7 +124,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         closeCalled * mockBluetoothGatt.close()
 
         then:
-        closeCalled * mockSemaphore.release()
+        closeCalled * mockRadioReleaseInterface.release()
 
         where:
         initialState        | nextState     | closeCalled
@@ -137,7 +144,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
 
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, mockMacAddress, gattAtomicReference, mockBluetoothManager, ImmediateScheduler.INSTANCE)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

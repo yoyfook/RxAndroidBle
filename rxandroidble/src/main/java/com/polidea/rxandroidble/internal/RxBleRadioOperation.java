@@ -2,10 +2,7 @@ package com.polidea.rxandroidble.internal;
 
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
-
 import com.polidea.rxandroidble.exceptions.BleException;
-import java.util.concurrent.Semaphore;
-
 import rx.Observable;
 import rx.Subscriber;
 import rx.subjects.ReplaySubject;
@@ -25,7 +22,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      */
     private ReplaySubject<T> replaySubject = ReplaySubject.create();
 
-    private Semaphore radioBlockingSemaphore;
+    private RadioReleaseInterface radioReleaseInterface;
 
     /**
      * A function that returns this operation as an Observable.
@@ -111,12 +108,12 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     }
 
     /**
-     * The setter for the semaphore which needs to be released for the Bluetooth Radio to continue the work
+     * The setter for the radio synchronization interface which needs to be released for the Bluetooth Radio to continue the work
      *
-     * @param radioBlockingSemaphore the semaphore
+     * @param radioReleaseInterface the interface
      */
-    public void setRadioBlockingSemaphore(Semaphore radioBlockingSemaphore) {
-        this.radioBlockingSemaphore = radioBlockingSemaphore;
+    public void setRadioReleaseInterface(RadioReleaseInterface radioReleaseInterface) {
+        this.radioReleaseInterface = radioReleaseInterface;
     }
 
     /**
@@ -124,7 +121,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      * This must be called at appropriate time of the happy-flow
      */
     protected final void releaseRadio() {
-        radioBlockingSemaphore.release();
+        radioReleaseInterface.release();
     }
 
     /**

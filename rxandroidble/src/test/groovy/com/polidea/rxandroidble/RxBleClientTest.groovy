@@ -392,8 +392,8 @@ class RxBleClientTest extends Specification {
                         @Override
                         void run() {
                             def semaphore = new MockSemaphore()
-                            rxBleRadioOperation.setRadioBlockingSemaphore(semaphore)
-                            semaphore.acquire()
+                            rxBleRadioOperation.setRadioReleaseInterface(semaphore)
+                            semaphore.awaitRelease()
                             rxBleRadioOperation.run()
                         }
                     }

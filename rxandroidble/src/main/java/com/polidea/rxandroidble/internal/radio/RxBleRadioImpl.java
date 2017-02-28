@@ -3,9 +3,6 @@ package com.polidea.rxandroidble.internal.radio;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-
-import java.util.concurrent.Semaphore;
-
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action0;
@@ -30,12 +27,12 @@ public class RxBleRadioImpl implements RxBleRadio {
 
                         /**
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
-                         * status. Below Semaphore is passed to the RxBleRadioOperation and is meant to be released at appropriate time
-                         * when the next operation should be able to start successfully.
+                         * status. Below RadioSynchronizationInterface is passed to the RxBleRadioOperation and is meant to be released
+                         * at appropriate time when the next operation should be able to start successfully.
                          */
-                        final Semaphore semaphore = new Semaphore(0);
+                        final RadioSemaphore radioSemaphore = new RadioSemaphore();
 
-                        rxBleRadioOperation.setRadioBlockingSemaphore(semaphore);
+                        rxBleRadioOperation.setRadioReleaseInterface(radioSemaphore);
 
                         Observable.just(rxBleRadioOperation)
                                 .observeOn(RxBleRadioImpl.this.scheduler)
@@ -45,7 +42,7 @@ public class RxBleRadioImpl implements RxBleRadio {
                                         rxBleRadioOperation1.run();
                                     }
                                 });
-                        semaphore.acquire();
+                        radioSemaphore.awaitRelease();
                         log("FINISHED", rxBleRadioOperation);
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing RxBleRadioOperation queue");

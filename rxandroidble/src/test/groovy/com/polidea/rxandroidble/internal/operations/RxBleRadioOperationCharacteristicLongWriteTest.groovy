@@ -6,6 +6,7 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
@@ -20,7 +21,6 @@ import spock.lang.Unroll
 
 import java.nio.ByteBuffer
 import java.util.concurrent.Callable
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -50,7 +50,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
 
@@ -233,7 +233,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         1 * mockCharacteristic.setValue(_) >> true
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release RadioReleaseInterface after successful write"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -245,11 +245,11 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         advanceTimeForWritesToComplete(3)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     @Unroll
-    def "should release Semaphore when write failed to start"() {
+    def "should release RadioReleaseInterface when write failed to start"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -261,14 +261,14 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         advanceTimeForWrites(failingWriteIndex)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
     }
 
     @Unroll
-    def "should release Semaphore when write failed"() {
+    def "should release RadioReleaseInterface when write failed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -280,7 +280,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
@@ -504,7 +504,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
                 immediateScheduler,
                 timeoutScheduler
         )
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

@@ -4,13 +4,13 @@ import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
@@ -19,7 +19,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
 
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -66,7 +66,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         }
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnMtuChanged() and release radio"() {
@@ -83,7 +83,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
+        (1.._) * mockRadioReleaseInterface.release() // technically it's not an error to call it more than once
     }
 
     def "should timeout if will not response after 10 seconds "() {
@@ -106,7 +106,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
 
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt,timeout, timeoutTimeUnit, testScheduler)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
+        objectUnderTest.setRadioReleaseInterface(mockRadioReleaseInterface)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

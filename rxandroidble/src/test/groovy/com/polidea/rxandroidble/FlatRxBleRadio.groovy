@@ -18,8 +18,8 @@ class FlatRxBleRadio implements RxBleRadio {
         return rxBleRadioOperation
                 .asObservable()
                 .doOnSubscribe({
-            rxBleRadioOperation.setRadioBlockingSemaphore(semaphore)
-            semaphore.acquire()
+            rxBleRadioOperation.setRadioReleaseInterface(semaphore)
+            semaphore.awaitRelease()
             rxBleRadioOperation.run()
         })
     }
