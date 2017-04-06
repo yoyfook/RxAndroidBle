@@ -93,7 +93,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
 
-        // How to listen for connection state changes
+        // 监听连接状态改变
         bleDevice.observeConnectionStateChanges()
                 .compose(bindUntilEvent(DESTROY))
                 .observeOn(AndroidSchedulers.mainThread())

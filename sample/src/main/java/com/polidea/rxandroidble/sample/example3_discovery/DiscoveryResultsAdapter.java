@@ -83,9 +83,9 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         final AdapterItem item = getItem(position);
 
         if (itemViewType == AdapterItem.SERVICE) {
-            holder.line1.setText(String.format("Service: %s", item.description));
+            holder.line1.setText(String.format("服务: %s", item.description));
         } else {
-            holder.line1.setText(String.format("Characteristic: %s", item.description));
+            holder.line1.setText(String.format("特征: %s", item.description));
         }
 
         holder.line2.setText(item.uuid.toString());
@@ -124,6 +124,7 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         if (isCharacteristicReadable(characteristic)) properties.add("Read");
         if (isCharacteristicWriteable(characteristic)) properties.add("Write");
         if (isCharacteristicNotifiable(characteristic)) properties.add("Notify");
+        if (isCharacteristicIndicatable(characteristic)) properties.add("Indicate");
         return TextUtils.join(" ", properties);
     }
 
@@ -139,6 +140,10 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         return (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0;
     }
 
+    private boolean isCharacteristicIndicatable(BluetoothGattCharacteristic characteristic) {
+        return ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0);
+    }
+
     private boolean isCharacteristicReadable(BluetoothGattCharacteristic characteristic) {
         return ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0);
     }
@@ -147,4 +152,10 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         return (characteristic.getProperties() & (BluetoothGattCharacteristic.PROPERTY_WRITE
                 | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) != 0;
     }
+
+    public void clearScanResults() {
+        data.clear();
+        notifyDataSetChanged();
+    }
+
 }

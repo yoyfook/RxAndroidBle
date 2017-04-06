@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
@@ -13,6 +14,7 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.example4_characteristic.CharacteristicOperationExampleActivity;
+import com.polidea.rxandroidble.sample.util.RxBleUtils;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
@@ -20,10 +22,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.android.schedulers.AndroidSchedulers;
 
+import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
 import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
+    @BindView(R.id.connection_state)
+    TextView connectionStateView;
     @BindView(R.id.connect)
     Button connectButton;
     @BindView(R.id.scan_results)
@@ -34,9 +39,11 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
+        adapter.clearScanResults();
         bleDevice.establishConnection(false)
                 .flatMap(RxBleConnection::discoverServices)
-                .first() // Disconnect automatically after discovery
+                // 探索完成之后断开连接
+                .first()
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnUnsubscribe(this::updateUI)
@@ -48,13 +55,18 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_example3);
+        setContentView(R.layout.activity_service_discovery);
         ButterKnife.bind(this);
         macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
-        //noinspection ConstantConditions
         getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         configureResultList();
+
+        // 监听连接状态改变
+        bleDevice.observeConnectionStateChanges()
+                .compose(bindUntilEvent(DESTROY))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onConnectionStateChange);
     }
 
     private void configureResultList() {
@@ -71,20 +83,12 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     }
 
     private void onAdapterItemClick(DiscoveryResultsAdapter.AdapterItem item) {
-
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
             final Intent intent = new Intent(this, CharacteristicOperationExampleActivity.class);
             intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
             intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
             startActivity(intent);
-        } else {
-            //noinspection ConstantConditions
-            Snackbar.make(findViewById(android.R.id.content), R.string.not_clickable, Snackbar.LENGTH_SHORT).show();
         }
-    }
-
-    private boolean isConnected() {
-        return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
 
     private void onConnectionFailure(Throwable throwable) {
@@ -92,7 +96,15 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
     }
 
+    private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
+        connectionStateView.setText(getString(R.string.connection_state, RxBleUtils.getConnectionStateStr(newState)));
+        updateUI();
+    }
+
+
     private void updateUI() {
-        connectButton.setEnabled(!isConnected());
+        final boolean onDoing = bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.CONNECTED
+                && bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.DISCONNECTED;
+        connectButton.setEnabled(!onDoing);
     }
 }
