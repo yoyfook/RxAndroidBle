@@ -19,13 +19,13 @@
         </activity>
         <activity
             android:name=".example2_connection.ConnectionExampleActivity"
-            android:label="@string/title_example2" />
+            android:label="@string/title_activity_connection" />
         <activity
             android:name=".example3_discovery.ServiceDiscoveryExampleActivity"
-            android:label="@string/title_example3" />
+            android:label="@string/title_service_discovery" />
         <activity
             android:name=".example4_characteristic.CharacteristicOperationExampleActivity"
-            android:label="@string/title_example4" />
+            android:label="@string/title_char_operation" />
         <activity
             android:name=".DeviceActivity"
             android:label="@string/title_activity_device" />
