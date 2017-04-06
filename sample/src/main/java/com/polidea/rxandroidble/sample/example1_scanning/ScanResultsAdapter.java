@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.sample.example1_scanning;
 
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,9 +38,8 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         void onAdapterViewClick(View view);
     }
 
-    private static final Comparator<RxBleScanResult> SORTING_COMPARATOR = (lhs, rhs) -> {
-        return lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
-    };
+    private static final Comparator<RxBleScanResult> SORTING_COMPARATOR =
+            (lhs, rhs) -> String.valueOf(lhs.getRssi()).compareTo(String.valueOf(rhs.getRssi()));
     private final List<RxBleScanResult> data = new ArrayList<>();
     private OnAdapterItemClickListener onAdapterItemClickListener;
     private final View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -52,12 +52,22 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         }
     };
 
+    public void setFilterStr(String filterStr) {
+        mFilterStr = filterStr;
+    }
+
+    private String mFilterStr;
+
     public void addScanResult(RxBleScanResult bleScanResult) {
-        // Not the best way to ensure distinct devices, just for sake on the demo.
+        final RxBleDevice newDevice = bleScanResult.getBleDevice();
+
+        // 检查该结果是否应该被过滤
+        if (!matchFilter(newDevice.getMacAddress(), newDevice.getName())) {
+            return;
+        }
 
         for (int i = 0; i < data.size(); i++) {
-
-            if (data.get(i).getBleDevice().equals(bleScanResult.getBleDevice())) {
+            if (data.get(i).getBleDevice().equals(newDevice)) {
                 data.set(i, bleScanResult);
                 notifyItemChanged(i);
                 return;
@@ -67,6 +77,16 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         data.add(bleScanResult);
         Collections.sort(data, SORTING_COMPARATOR);
         notifyDataSetChanged();
+    }
+
+    private boolean matchFilter(String mac, String name) {
+        if (TextUtils.isEmpty(mFilterStr)) {
+            return true;
+        }
+
+        // 忽略大小写比较
+        return (!TextUtils.isEmpty(mac) && mac.toLowerCase().contains(mFilterStr.toLowerCase())) ||
+                (!TextUtils.isEmpty(name) && name.toLowerCase().contains(mFilterStr.toLowerCase()));
     }
 
     public void clearScanResults() {
