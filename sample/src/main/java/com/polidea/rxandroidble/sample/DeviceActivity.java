@@ -35,7 +35,6 @@ public class DeviceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_device);
         ButterKnife.bind(this);
         macAddress = getIntent().getStringExtra(EXTRA_MAC_ADDRESS);
-        //noinspection ConstantConditions
         getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
     }
 }
