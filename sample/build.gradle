@@ -20,9 +20,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
-        applicationId "com.polidea.rxandroidble.sample"
+        applicationId "me.yoyfook.androidble.tools"
         minSdkVersion 18
-        targetSdkVersion 25
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }

@@ -34,7 +34,7 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_example1);
+        setContentView(R.layout.activity_scan);
         ButterKnife.bind(this);
         rxBleClient = SampleApplication.getRxBleClient(this);
         configureResultList();

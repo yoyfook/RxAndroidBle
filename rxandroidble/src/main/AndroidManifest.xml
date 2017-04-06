@@ -7,6 +7,5 @@
 
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
-    <application
-        android:label="@string/app_name"/>
+    <application />
 </manifest>
