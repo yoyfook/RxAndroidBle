@@ -90,7 +90,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         setContentView(R.layout.activity_connection);
         ButterKnife.bind(this);
         String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
-        getActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
+        getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
 
         // How to listen for connection state changes
