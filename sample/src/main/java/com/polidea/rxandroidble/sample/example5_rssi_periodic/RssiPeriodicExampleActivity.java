@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble.sample.example5_rssi_periodic;
 
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import com.polidea.rxandroidble.sample.util.Snackbar;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -76,7 +76,7 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {

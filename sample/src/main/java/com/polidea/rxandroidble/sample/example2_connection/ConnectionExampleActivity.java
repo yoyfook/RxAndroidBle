@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.sample.example2_connection;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import com.polidea.rxandroidble.sample.util.Snackbar;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
 import android.widget.EditText;
@@ -105,11 +105,11 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void onConnectionFailure(Throwable throwable) {
-        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onConnectionReceived(RxBleConnection connection) {
-        Snackbar.make(findViewById(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), "Connection received", Snackbar.LENGTH_LONG).show();
     }
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
@@ -118,7 +118,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void onMtuReceived(Integer mtu) {
-        Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_LONG).show();
     }
 
     private void clearSubscription() {

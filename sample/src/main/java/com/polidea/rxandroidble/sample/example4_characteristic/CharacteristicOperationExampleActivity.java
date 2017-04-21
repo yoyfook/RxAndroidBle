@@ -1,9 +1,10 @@
 package com.polidea.rxandroidble.sample.example4_characteristic;
 
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import com.polidea.rxandroidble.sample.util.Snackbar;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -12,6 +13,7 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.util.HexString;
+import com.polidea.rxandroidble.sample.util.RxBleUtils;
 import com.polidea.rxandroidble.utils.ConnectionSharingAdapter;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
@@ -24,11 +26,14 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
 
+import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
 import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class CharacteristicOperationExampleActivity extends RxAppCompatActivity {
 
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";
+    @BindView(R.id.connection_state)
+    TextView connectionStateView;
     @BindView(R.id.connect)
     Button connectButton;
     @BindView(R.id.read_output)
@@ -36,7 +41,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     @BindView(R.id.read_hex_output)
     TextView readHexOutputView;
     @BindView(R.id.write_input)
-    TextView writeInput;
+    EditText writeInput;
     @BindView(R.id.read)
     Button readButton;
     @BindView(R.id.write)
@@ -59,6 +64,18 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         connectionObservable = prepareConnectionObservable();
         //noinspection ConstantConditions
         getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
+
+        // 监听连接状态改变
+        bleDevice.observeConnectionStateChanges()
+                .compose(bindUntilEvent(DESTROY))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onConnectionStateChange);
+        updateUI();
+    }
+
+    private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
+        connectionStateView.setText(getString(R.string.connection_state, RxBleUtils.getConnectionStateStr(newState)));
+        updateUI();
     }
 
     private Observable<RxBleConnection> prepareConnectionObservable() {
@@ -130,37 +147,37 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onReadFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Read error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Read error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onWriteSuccess() {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Write success", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Write success", Snackbar.LENGTH_LONG).show();
     }
 
     private void onWriteFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Write error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Write error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onNotificationReceived(byte[] bytes) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_LONG).show();
     }
 
     private void onNotificationSetupFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Notifications error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Notifications error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void notificationHasBeenSetUp() {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Notifications has been set up", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Notifications has been set up", Snackbar.LENGTH_LONG).show();
     }
 
     private void clearSubscription() {
@@ -172,10 +189,16 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     }
 
     private void updateUI() {
-        connectButton.setText(isConnected() ? getString(R.string.disconnect) : getString(R.string.connect));
-        readButton.setEnabled(isConnected());
-        writeButton.setEnabled(isConnected());
-        notifyButton.setEnabled(isConnected());
+        final boolean connected = isConnected();
+        final boolean onDoing = bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.CONNECTED
+                && bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.DISCONNECTED;
+
+        connectButton.setText(connected ? getString(R.string.disconnect) : getString(R.string.connect));
+        connectButton.setEnabled(!onDoing);
+        writeInput.setEnabled(connected);
+        readButton.setEnabled(connected);
+        writeButton.setEnabled(connected);
+        notifyButton.setEnabled(connected);
     }
 
     private byte[] getInputBytes() {

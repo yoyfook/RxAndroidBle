@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+import com.polidea.rxandroidble.sample.util.Snackbar;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -110,12 +110,12 @@ public class CustomOperationExampleActivity extends RxAppCompatActivity {
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onRunCustomFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(R.id.main), "Run custom error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Run custom error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void clearSubscription() {

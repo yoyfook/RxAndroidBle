@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.sample.example3_discovery;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import com.polidea.rxandroidble.sample.util.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
@@ -93,7 +93,7 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_LONG).show();
     }
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
