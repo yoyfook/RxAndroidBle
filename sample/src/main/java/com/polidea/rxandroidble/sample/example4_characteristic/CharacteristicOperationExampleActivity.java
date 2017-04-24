@@ -1,7 +1,10 @@
 package com.polidea.rxandroidble.sample.example4_characteristic;
 
+import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
 import com.polidea.rxandroidble.sample.util.Snackbar;
+
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,12 +20,14 @@ import com.polidea.rxandroidble.sample.util.RxBleUtils;
 import com.polidea.rxandroidble.utils.ConnectionSharingAdapter;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
 
@@ -132,12 +137,19 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     public void onNotifyClick() {
 
         if (isConnected()) {
-            connectionObservable
+            Subscription notificationSubscription = connectionObservable
                     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
                     .doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
+            // 10秒后关闭通知
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    notificationSubscription.unsubscribe();
+                }
+            },10000);
         }
     }
 

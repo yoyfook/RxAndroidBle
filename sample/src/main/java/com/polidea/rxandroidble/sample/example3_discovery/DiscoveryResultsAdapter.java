@@ -123,6 +123,7 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         List<String> properties = new ArrayList<>();
         if (isCharacteristicReadable(characteristic)) properties.add("Read");
         if (isCharacteristicWriteable(characteristic)) properties.add("Write");
+        if (isCharacteristicWriteableNoResponse(characteristic)) properties.add("WriteNoRes");
         if (isCharacteristicNotifiable(characteristic)) properties.add("Notify");
         if (isCharacteristicIndicatable(characteristic)) properties.add("Indicate");
         return TextUtils.join(" ", properties);
@@ -149,8 +150,11 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
     }
 
     private boolean isCharacteristicWriteable(BluetoothGattCharacteristic characteristic) {
-        return (characteristic.getProperties() & (BluetoothGattCharacteristic.PROPERTY_WRITE
-                | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) != 0;
+        return (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0;
+    }
+
+    private boolean isCharacteristicWriteableNoResponse(BluetoothGattCharacteristic characteristic) {
+        return (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0;
     }
 
     public void clearScanResults() {
